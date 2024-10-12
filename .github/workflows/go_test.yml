@@ -37,4 +37,3 @@ jobs:
           else
             echo "No folder for current branch"
           fi
-T
