@@ -39,7 +39,7 @@ func TestCondSignal(t *testing.T) {
       t.Fatal("too many goroutines awake")
     default:
     }
-    n--
+    n -= 1
   }
   c.Signal()
 }
