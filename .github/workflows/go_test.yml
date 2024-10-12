@@ -1,31 +1,40 @@
-name: Go Tests
+name: Go ests
 
-# Trigger workflow on every push to any branch
 on:
   push:
     branches:
-      - '**'
+      - '*'
+  pull_request:
+    branches:
+      - '*'
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-      
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.22'
+      - name: Checkout the code
+        uses: actions/checkout@v3
 
-    - name: Run tests for folder matching branch name
-      run: |
-        BRANCH_NAME=${{ github.ref_name }}
-        echo "Running tests for folder: ${BRANCH_NAME}"
-        if [ -d "./${BRANCH_NAME}" ]; then
-          cd ./${BRANCH_NAME}
-          go test ./...
-        else
-          echo "No folder named ${BRANCH_NAME} found. Skipping tests."
-        fi
+      - name: Get branch name
+        id: get_branch
+        run: echo "branch_name=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Run Go tests for current branch folder
+        run: |
+          branch_dir=${{ env.branch_name }}
+          
+          # Run tests only if source code exists in the branch
+          if [ -d "$branch_dir" ]; then
+            cd $branch_dir
+            
+            # Fetch the test branch and merge test files
+            git fetch origin test:test
+            git checkout test -- .  # Checkout test files from the test branch
+            
+            # Run tests after merging test files
+            go test ./...
+          else
+            echo "No folder for current branch"
+          fi
+T
